@@ -552,6 +552,21 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="social-share">
+        <span class="share-label">Share:</span>
+        <button class="share-button twitter" data-activity="${name}" title="Share on Twitter">
+          🐦
+        </button>
+        <button class="share-button facebook" data-activity="${name}" title="Share on Facebook">
+          👍
+        </button>
+        <button class="share-button email" data-activity="${name}" title="Share via Email">
+          ✉️
+        </button>
+        <button class="share-button copy" data-activity="${name}" title="Copy Link">
+          🔗
+        </button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -586,6 +601,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for social share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const activityName = button.dataset.activity;
+        let shareType = "copy";
+        if (button.classList.contains("twitter")) {
+          shareType = "twitter";
+        } else if (button.classList.contains("facebook")) {
+          shareType = "facebook";
+        } else if (button.classList.contains("email")) {
+          shareType = "email";
+        }
+        handleShare(activityName, details, shareType);
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -854,6 +886,54 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+  // Handle social sharing
+  function handleShare(activityName, details, shareType) {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(activityName)}`;
+    const formattedSchedule = formatSchedule(details);
+    const shareText = `Join ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+
+    switch (shareType) {
+      case "twitter":
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          shareText
+        )}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, "_blank", "width=600,height=400");
+        break;
+
+      case "facebook":
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          shareUrl
+        )}`;
+        window.open(facebookUrl, "_blank", "width=600,height=400");
+        break;
+
+      case "email":
+        const emailSubject = `Check out ${activityName} at Mergington High School`;
+        const emailBody = `${shareText}\n\nLearn more: ${shareUrl}`;
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(
+          emailSubject
+        )}&body=${encodeURIComponent(emailBody)}`;
+        window.location.href = mailtoLink;
+        break;
+
+      case "copy":
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => {
+              showMessage("Link copied to clipboard!", "success");
+            })
+            .catch((err) => {
+              console.error("Failed to copy link:", err);
+              showMessage("Failed to copy link. Please try again.", "error");
+            });
+        } else {
+          showMessage("Copy to clipboard is not supported in this browser.", "error");
+        }
+        break;
+    }
+  }
 
   // Expose filter functions to window for future UI control
   window.activityFilters = {
