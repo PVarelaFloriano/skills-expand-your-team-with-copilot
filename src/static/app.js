@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dark mode elements
   const darkModeToggle = document.getElementById("dark-mode-toggle");
-  const themeIcon = document.querySelector(".theme-icon");
+  const themeIcon = darkModeToggle?.querySelector(".theme-icon");
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -50,20 +50,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dark mode functionality
   function initializeDarkMode() {
+    if (!darkModeToggle || !themeIcon) {
+      return; // Dark mode toggle not available
+    }
+
     // Check if user has a saved preference
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
       enableDarkMode();
+    } else if (savedTheme === "light") {
+      disableDarkMode();
+    } else {
+      // Default to light mode if no preference is saved
+      disableDarkMode();
     }
   }
 
   function enableDarkMode() {
+    if (!themeIcon) return;
     document.body.classList.add("dark-mode");
     themeIcon.textContent = "☀️";
     localStorage.setItem("theme", "dark");
   }
 
   function disableDarkMode() {
+    if (!themeIcon) return;
     document.body.classList.remove("dark-mode");
     themeIcon.textContent = "🌙";
     localStorage.setItem("theme", "light");
@@ -78,7 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Dark mode toggle event listener
-  darkModeToggle.addEventListener("click", toggleDarkMode);
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener("click", toggleDarkMode);
+  }
 
   // Time range mappings for the dropdown
   const timeRanges = {
