@@ -607,13 +607,14 @@ document.addEventListener("DOMContentLoaded", () => {
     shareButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const activityName = button.dataset.activity;
-        const shareType = button.classList.contains("twitter")
-          ? "twitter"
-          : button.classList.contains("facebook")
-          ? "facebook"
-          : button.classList.contains("email")
-          ? "email"
-          : "copy";
+        let shareType = "copy";
+        if (button.classList.contains("twitter")) {
+          shareType = "twitter";
+        } else if (button.classList.contains("facebook")) {
+          shareType = "facebook";
+        } else if (button.classList.contains("email")) {
+          shareType = "email";
+        }
         handleShare(activityName, details, shareType);
       });
     });
@@ -888,8 +889,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle social sharing
   function handleShare(activityName, details, shareType) {
-    const currentUrl = window.location.href.split('?')[0];
-    const shareUrl = `${currentUrl}?activity=${encodeURIComponent(activityName)}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(activityName)}`;
     const formattedSchedule = formatSchedule(details);
     const shareText = `Join ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
 
@@ -918,15 +918,19 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
 
       case "copy":
-        navigator.clipboard
-          .writeText(shareUrl)
-          .then(() => {
-            showMessage("Link copied to clipboard!", "success");
-          })
-          .catch((err) => {
-            console.error("Failed to copy link:", err);
-            showMessage("Failed to copy link. Please try again.", "error");
-          });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => {
+              showMessage("Link copied to clipboard!", "success");
+            })
+            .catch((err) => {
+              console.error("Failed to copy link:", err);
+              showMessage("Failed to copy link. Please try again.", "error");
+            });
+        } else {
+          showMessage("Copy to clipboard is not supported in this browser.", "error");
+        }
         break;
     }
   }
